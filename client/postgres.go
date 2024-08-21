@@ -15,6 +15,7 @@ type PostgresQL struct {
 	MaxIdle         int           `toml:"max_idle"`
 	MaxConn         int           `toml:"max_conn"`
 	ConnMaxLifetime time.Duration `toml:"conn_max_lifetime"`
+	Extensions      []string      `toml:"extensions"`
 }
 
 const Postgres = "postgres"
@@ -44,7 +45,24 @@ func MustNewDatabaseClient(ql PostgresQL) *sqlx.DB {
 	db.SetMaxOpenConns(ql.MaxConn)
 	db.SetConnMaxLifetime(ql.ConnMaxLifetime)
 
+	// 如果有插件则启用这些插件
+	err = CreateExtensionsIfExist(ql.Extensions, db)
+	if err != nil {
+		panic(err)
+	}
+
 	return db
+}
+
+func CreateExtensionsIfExist(extensions []string, db *sqlx.DB) error {
+	for _, extension := range extensions {
+		query := "CREATE EXTENSION IF NOT EXISTS " + pq.QuoteIdentifier(extension)
+		if _, err := db.Exec(query); err != nil {
+			return fmt.Errorf("failed to create extension %s: %w", extension, err)
+		}
+	}
+
+	return nil
 }
 
 func CreateHubDatabaseIfNotExist(name string, db *sqlx.DB) bool {
