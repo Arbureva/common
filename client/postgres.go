@@ -20,7 +20,7 @@ type PostgresQL struct {
 
 const Postgres = "postgres"
 
-func MustNewDatabaseClient(ql PostgresQL) *sqlx.DB {
+func MustNewPostgresClient(ql PostgresQL) *sqlx.DB {
 	db, err := sqlx.Connect(Postgres, ql.DSN)
 	if err != nil {
 		panic(fmt.Sprintf("数据库连接失败: %s", err))
