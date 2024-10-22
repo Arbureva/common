@@ -1,4 +1,4 @@
-module github.com/Locter9001/common
+module github.com/Arbureva/common
 
 go 1.20
 
